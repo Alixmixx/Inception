@@ -1,28 +1,34 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    Makefile                                           :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: amuller <amuller@student.42.fr>            +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2023/05/08 21:36:08 by amuller           #+#    #+#              #
-#    Updated: 2023/05/08 21:36:10 by amuller          ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
+NAME = inception
 
-all : up
+all:
+	@printf "Launch configuration ${NAME}...\n"
+	@bash srcs/requirements/wordpress/tools/make_dir.sh
+	@docker-compose -f ./srcs/docker-compose.yml --env-file srcs/.env up -d
 
-up : 
-	@docker-compose -f ./srcs/docker-compose.yml up -d
+build:
+	@printf "Building configuration ${NAME}...\n"
+	@bash srcs/requirements/wordpress/tools/make_dir.sh
+	@docker-compose -f ./srcs/docker-compose.yml --env-file srcs/.env up -d --build
 
-down : 
-	@docker-compose -f ./srcs/docker-compose.yml down
+down:
+	@printf "Stopping configuration ${NAME}...\n"
+	@docker-compose -f ./srcs/docker-compose.yml --env-file srcs/.env down
 
-stop : 
-	@docker-compose -f ./srcs/docker-compose.yml stop
+re:
+	@printf "Rebuild configuration ${NAME}...\n"
+	@docker-compose -f ./srcs/docker-compose.yml --env-file srcs/.env up -d --build
 
-start : 
-	@docker-compose -f ./srcs/docker-compose.yml start
+clean: down
+	@printf "Cleaning configuration ${NAME}...\n"
+	@docker system prune -a
 
-status : 
-	@docker ps
+fclean:
+	@printf "Total clean of all configurations docker\n"
+	@docker stop $$(docker ps -qa)
+	@docker system prune --all --force --volumes
+	@docker network prune --force
+	@docker volume prune --force
+	@sudo rm -rf ~/data/wordpress/*
+	@sudo rm -rf ~/data/mariadb/*
+
+.PHONY	: all build down re clean fclean
